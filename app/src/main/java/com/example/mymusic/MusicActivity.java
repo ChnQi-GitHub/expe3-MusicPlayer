@@ -61,7 +61,7 @@ public class MusicActivity extends Activity {
     private TextView totalTV;
     boolean isStop = true;
     private boolean isSeekBarChanging;//互斥变量，防止进度条与定时器冲突。
-    private int currentposition;//当前音乐播放的进度
+    private int tag;//当前音乐播放的进度
     private Timer timer;
     private ArrayList<String> list;
     private File[] songFiles;
@@ -130,6 +130,7 @@ public class MusicActivity extends Activity {
             StrictMode.setVmPolicy(builder.build());
         }
 
+
         list = new ArrayList<String>();   //音乐列表
 
         File sdpath = Environment.getExternalStorageDirectory(); //获得手机SD卡路径
@@ -178,18 +179,18 @@ public class MusicActivity extends Activity {
         li.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                song_path = ((TextView) view).getText().toString();
+                        song_path = ((TextView) view).getText().toString();
 
-                Log.d("!",song_path);
-                currentposition = position;
-                changeMusic(currentposition);
-                try {
-                    mp.reset();    //重置
-                    mp.setDataSource(song_path);
-                    mp.prepare();     //准备
-                    mp.start(); //播放
-                    seekBar.setMax(mp.getDuration());
-                    isStop = false;
+                        Log.d("!",song_path);
+                        tag = position;
+                        changeMusic(tag);
+                        try {
+                            mp.reset();    //重置
+                            mp.setDataSource(song_path);
+                            mp.prepare();     //准备
+                            mp.start(); //播放
+                            seekBar.setMax(mp.getDuration());
+                            isStop = false;
                     timer = new Timer();
 
                     timer.schedule(new TimerTask() {
@@ -230,25 +231,25 @@ public class MusicActivity extends Activity {
         });
         //MidiaPlayer
         //上一曲和下一曲
-        final ImageButton previous = (ImageButton) findViewById(R.id.previous);
+        final Button previous = (Button) findViewById(R.id.previous);
         previous.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                changeMusic(--currentposition);
+                changeMusic(--tag);
             }
         });
-        final ImageButton next = (ImageButton) findViewById(R.id.next);
+        final Button next = (Button) findViewById(R.id.next);
         next.setOnClickListener(new View.OnClickListener() {
 
 
             public void onClick(View v) {     //顺序
                 if (flag == 0) {
                     Log.d("flag", 0 + "");
-                    changeMusic(++currentposition);
+                    changeMusic(++tag);
 
                 } else if (flag == 1) {      //单曲
                     Log.d("flag", 1 + "");
-                    changeMusic(currentposition);
+                    changeMusic(tag);
                 } else if (flag == 2) {     //随机
                     Log.d("flag", 2 + "");
                     Random r = new Random();
@@ -257,56 +258,28 @@ public class MusicActivity extends Activity {
                 }
             }
         });
-        TextView textView = findViewById(R.id.text_pop);
-        registerForContextMenu(textView);
-        //弹出式菜单
-        textView.setOnClickListener(new View.OnClickListener() {
+        Button btn_pop= findViewById(R.id.text_pop);
+
+        //乐库
+       btn_pop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PopupMenu popupMenu = new PopupMenu(MusicActivity.this,view);
-                popupMenu.inflate(R.menu.menu);
-                popupMenu.show();
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()){
-                            case R.id.creat:
-                                CreatDialog();
-                                break;
-                        }
-                        return false;
-                    }
-                });
+                Intent intent=new Intent(MusicActivity.this,MusicList.class);
+               startActivity(intent);
             }
         });
 
     }
 
 
-    private void CreatDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(MusicActivity.this);
-        builder.setTitle("提示");
-        builder.setMessage("是否进入乐库");
 
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(MusicActivity.this, MusicList.class);
-                startActivity(intent);
-
-            }
-        });
-        builder.setNegativeButton("取消", null);
-        builder.create();
-        builder.show();
-    }
 
 
     private void changeMusic(int position) {
         if (position < 0) {
-            currentposition = position = list.size() - 1;
+            tag = position = list.size() - 1;
         } else if (position > list.size() - 1) {
-            currentposition = position = 0;
+            tag = position = 0;
         }
         song_path = songFiles[position].getAbsolutePath();
 
